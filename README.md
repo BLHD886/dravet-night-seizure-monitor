@@ -92,6 +92,13 @@ Dravet 综合征是 SCN1A 基因突变导致的婴儿起病、终身性、难治
 - 🐛 [提出问题与需求](https://github.com/OpenRDHub/dravet-night-seizure-monitor/issues)
 - 🔧 提交 Pull Request
 
+## 🗂 方案总览
+
+<!-- SOLUTIONS_INDEX_START -->
+> 暂无提交方案。第一个方案从这里开始 → 阅读 [solutions/ 提交指南](solutions/README.md)
+<!-- SOLUTIONS_INDEX_END -->
+
+
 ## 许可证
 
 待定（License TBD）
