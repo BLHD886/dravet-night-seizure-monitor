@@ -1,0 +1,21 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'org.dravet.guard'
+    compileSdk 35
+    buildFeatures { buildConfig true }
+    defaultConfig {
+        applicationId 'org.dravet.guard.engineering'
+        minSdk 26
+        targetSdk 35
+        versionCode 7
+        versionName '0.6-engineering'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildTypes {
+        debug { applicationIdSuffix '.debug' }
+        release { minifyEnabled false }
+    }
+}

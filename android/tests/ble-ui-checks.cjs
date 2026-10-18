@@ -1,0 +1,14 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const html=fs.readFileSync('android/app/src/main/assets/app.html','utf8');
+const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];new vm.Script(script);
+const code=script.slice(script.indexOf('function blePresentation('),script.indexOf('const renderV4=render;'));
+const ctx={};vm.createContext(ctx);vm.runInContext(code,ctx);
+assert.equal(ctx.blePresentation({selected:'x',connection:'disconnected'}).label,'已断开');
+assert.equal(ctx.blePresentation({selected:'x',connection:'connecting'}).label,'连接中');
+assert.equal(ctx.blePresentation({transport_connected:true,connection:'subscribed'}).label,'已连接 · 暂无新数据');
+assert.equal(ctx.blePresentation({transport_connected:true,pulse_status:'LIVE_VALUE'}).label,'正在接收数据');
+assert.equal(ctx.blePresentation({transport_connected:false,pulse_status:'LIVE_VALUE'}).label,'未连接');
+assert(ctx.blePresentation({pulse_status:'NOT_SCHEDULED'}).pulse.includes('未安排'));
+assert(ctx.blePresentation({oxygen_status:'STALE',oxygen_age_ms:60000}).oxygen.includes('60秒前'));
+for(const id of ['watchChip','mineWatchBadge','deviceWatchState','hrSource','spoSource','hrMeta','spoMeta','hrFootnote','measurePulse','stopMeasurement'])assert(html.includes('id="'+id+'"'),id);
+console.log('V5 UI checks passed: syntax, 7 BLE state cases, 10 target elements');
