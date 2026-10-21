@@ -1,5 +1,3 @@
-> 本文部分为早期开发说明，当前功能状态以仓库根README为准。
-
 # Dravet 软件链路开发原型
 
 Python 3.11+，只用标准库，无第三方依赖。支持合成演示和 CSV 历史导入；不是已发布 Android App 或已部署的云服务。请先读 ../PROJECT_STATE.md 和 ../outputs/Dravet软件兼容方案V3.md。

@@ -1,5 +1,3 @@
-> 本文部分为早期开发说明，当前功能状态以仓库根README为准。
-
 # 夜间守护原生 Android 工程
 
 工程目标 Android 8.0+（minSdk 26），compile/target 35；Java 17、Android Gradle Plugin 8.9.0、Gradle 8.11.1。无第三方 App 运行库。现代机型仍必须分别验证通知、锁屏、后台和 USB；不承诺全品牌行为一致。

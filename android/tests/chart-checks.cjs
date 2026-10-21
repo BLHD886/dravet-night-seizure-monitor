@@ -1,0 +1,17 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const html=fs.readFileSync('android/app/src/main/assets/app.html','utf8'),js=html.match(/<script>([\s\S]*?)<\/script>/)[1];new vm.Script(js);
+const ctx={};vm.createContext(ctx);vm.runInContext(js.slice(js.indexOf('function buildMetricGeometry('),js.indexOf('function drawMetricChart(')),ctx);
+const plot=(p,o={})=>ctx.buildMetricGeometry(p,o);let g;
+g=plot([]);assert.equal(g.rows.length,0);
+g=plot([{timestamp:1000,value:98}],{unit:'%',maximum:100});assert.equal(g.dots.length,1);assert(g.solid.startsWith('M'));assert(!g.solid.includes('L'));assert.equal(g.dots[0].x,175);
+g=plot([{timestamp:0,value:98},{timestamp:52000,value:97}],{unit:'%',gapMs:60000,maximum:100});assert(g.solid.includes('L'));assert.equal(g.gaps,'');
+g=plot([{timestamp:0,value:98},{timestamp:90000,value:97}],{unit:'%',gapMs:60000,maximum:100});assert(!g.solid.includes('L'));assert(g.gaps.includes('L'));assert.equal(g.dots.length,2,'both separated measurements visible');
+g=plot([{timestamp:0,value:120},{timestamp:2000,value:120},{timestamp:4000,value:120}],{unit:'次/分',gapMs:10000});assert.equal(g.dots.length,3);assert.equal((g.solid.match(/L/g)||[]).length,2);assert(!g.solid.includes('NaN'));
+g=plot([{timestamp:2000,value:125},{timestamp:0,value:120},{timestamp:1000,value:124}]);assert.equal(g.rows[0].timestamp,0);assert.equal(g.rows[2].timestamp,2000);
+g=plot([{timestamp:'bad',value:98},{timestamp:1000,value:0},{timestamp:2000,value:101},{timestamp:3000,value:97}],{maximum:100});assert.equal(g.rows.length,1);
+g=plot([{timestamp:'2026-10-17T00:00:00.123456789Z',value:120},{timestamp:'2026-10-17T00:00:02.123456789Z',value:121}]);assert.equal(g.rows.length,2,'Android Instant precision supported');assert(g.solid.includes('L'));
+g=plot([{timestamp:1000,value:120},{timestamp:1000,value:121}]);assert(g.dots.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));
+g=plot([{timestamp:0,value:100},{timestamp:1000,value:100}],{maximum:100,unit:'%'});assert(g.hi>g.lo);assert(g.ticks.every(Number.isFinite));
+assert(!html.includes('id="addFromHome"'));assert(!html.includes('id="summaryFromHome"'));const ids=[...html.matchAll(/id="([^" ]+)"/g)].map(x=>x[1]);assert.equal(ids.length,new Set(ids).size,'DOM IDs unique');
+assert(html.indexOf('id="respCard"')>html.indexOf('id="spoChart"'));assert(html.indexOf('id="respCard"')<html.indexOf('id="homeRuleSummary"'));assert(html.includes('虚线仅连接独立结果，非连续采样'));
+console.log('Chart checks passed: singleton visibility, real line segments, long-gap guides, invalid records, Android timestamps, axes, compact home layout');

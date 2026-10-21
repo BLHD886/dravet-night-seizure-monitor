@@ -67,7 +67,7 @@ def main():
     tools=next(extracted.rglob('aapt2.exe')).parent
     manifest=ET.parse(ROOT/'android/app/src/main/AndroidManifest.xml')
     root=manifest.getroot();root.set('package','org.dravet.guard.engineering.debug')
-    root.set('{'+ANDROID_NS+'}versionCode','7');root.set('{'+ANDROID_NS+'}versionName','0.6-engineering')
+    root.set('{'+ANDROID_NS+'}versionCode','10');root.set('{'+ANDROID_NS+'}versionName','0.9-engineering')
     root.insert(0,ET.Element('uses-sdk',{'{'+ANDROID_NS+'}minSdkVersion':'26','{'+ANDROID_NS+'}targetSdkVersion':'35'}))
     application=root.find('application');application.set('{'+ANDROID_NS+'}debuggable','true');application.set('{'+ANDROID_NS+'}usesCleartextTraffic','true')
     for kind in ('activity','service'):
@@ -98,7 +98,7 @@ def main():
         run([keytool,'-genkeypair','-keystore',keystore,'-alias','androiddebugkey','-storepass','android','-keypass','android',
              '-dname','CN=Android Debug,O=Android,C=US','-keyalg','RSA','-keysize','2048','-validity','10000'])
     output=ROOT/'outputs/apk';output.mkdir(parents=True,exist_ok=True)
-    apk=output/'DravetGuard-Prototype-0.6.apk'
+    apk=output/'DravetGuard-Prototype-0.9.apk'
     run([java,'-jar',tools/'lib/apksigner.jar','sign','--ks',keystore,'--ks-key-alias','androiddebugkey',
          '--ks-pass','pass:android','--key-pass','pass:android','--out',apk,aligned])
     run([java,'-jar',tools/'lib/apksigner.jar','verify','--verbose',apk])

@@ -7,8 +7,8 @@ android {
         applicationId 'org.dravet.guard.engineering'
         minSdk 26
         targetSdk 35
-        versionCode 7
-        versionName '0.6-engineering'
+        versionCode 10
+        versionName '0.9-engineering'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

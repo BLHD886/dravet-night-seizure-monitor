@@ -33,6 +33,14 @@ final class LocalRepository extends SQLiteOpenHelper {
     private void createAlerts(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS pulse_alerts (id TEXT PRIMARY KEY, body TEXT NOT NULL)");}
     synchronized void saveAlert(JSONObject event){ContentValues v=new ContentValues();v.put("id",event.optString("id"));v.put("body",event.toString());getWritableDatabase().insertWithOnConflict("pulse_alerts",null,v,SQLiteDatabase.CONFLICT_REPLACE);}
     synchronized org.json.JSONArray alerts() throws Exception {org.json.JSONArray result=new org.json.JSONArray();try(Cursor c=getReadableDatabase().rawQuery("SELECT body FROM pulse_alerts ORDER BY rowid DESC LIMIT 200",null)){while(c.moveToNext())result.put(new JSONObject(c.getString(0)));}return result;}
+    synchronized void saveRuleResult(JSONObject states,org.json.JSONArray events) throws Exception {
+        SQLiteDatabase db=getWritableDatabase();db.beginTransaction();try{
+            for(int i=0;i<events.length();i++){JSONObject event=events.getJSONObject(i);ContentValues v=new ContentValues();v.put("id",event.getString("id"));v.put("body",event.toString());if(db.insertWithOnConflict("pulse_alerts",null,v,SQLiteDatabase.CONFLICT_REPLACE)<0)throw new IllegalStateException("提醒记录保存失败");}
+            JSONObject high=states.optJSONObject("pulse_high");
+            for(String key:new String[]{"metric_rules","pulse_rule"}){ContentValues v=new ContentValues();v.put("name",key);v.put("body",key.equals("metric_rules")?states.toString():high==null?"{}":high.toString());v.put("received",System.currentTimeMillis());if(db.insertWithOnConflict("cache",null,v,SQLiteDatabase.CONFLICT_REPLACE)<0)throw new IllegalStateException("规则状态保存失败");}
+            db.setTransactionSuccessful();
+        }finally{db.endTransaction();}
+    }
     synchronized JSONObject alert(String id) throws Exception {try(Cursor c=getReadableDatabase().rawQuery("SELECT body FROM pulse_alerts WHERE id=?",new String[]{id})){if(!c.moveToFirst())throw new Exception("未找到提醒记录");return new JSONObject(c.getString(0));}}
     private void createSamples(SQLiteDatabase db) { db.execSQL("CREATE TABLE IF NOT EXISTS samples (id TEXT PRIMARY KEY, source TEXT NOT NULL, stamp TEXT NOT NULL, body TEXT NOT NULL)");db.execSQL("CREATE INDEX IF NOT EXISTS sample_source_time ON samples(source,stamp)"); }
     synchronized void saveSamples(org.json.JSONArray samples) throws Exception {
@@ -58,7 +66,7 @@ final class LocalRepository extends SQLiteOpenHelper {
     synchronized void markSynced(String id) { ContentValues value=new ContentValues();value.put("synced",1);getWritableDatabase().update("observations",value,"id=?",new String[]{id}); }
     synchronized void save(String name, JSONObject body) {
         ContentValues values = new ContentValues(); values.put("name", name); values.put("body", body.toString()); values.put("received", System.currentTimeMillis());
-        getWritableDatabase().insertWithOnConflict("cache", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        if(getWritableDatabase().insertWithOnConflict("cache", null, values, SQLiteDatabase.CONFLICT_REPLACE)<0)throw new IllegalStateException("本机保存失败，请检查存储空间");
     }
     synchronized JSONObject read(String name) {
         try (Cursor cursor = getReadableDatabase().rawQuery("SELECT body FROM cache WHERE name=?", new String[]{name})) {
